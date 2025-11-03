@@ -1,0 +1,116 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #333; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #666; }
+      .text { font-family: Arial, sans-serif; font-size: 14px; fill: #333; }
+      .small-text { font-family: Arial, sans-serif; font-size: 12px; fill: #555; }
+      .jwt-part { font-family: 'Courier New', monospace; font-size: 12px; }
+      .header-color { fill: #ff6b6b; }
+      .payload-color { fill: #4ecdc4; }
+      .signature-color { fill: #45b7d1; }
+      .box { fill: #f8f9fa; stroke: #dee2e6; stroke-width: 2; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">JWT (JSON Web Token) 结构</text>
+  
+  <!-- JWT Structure -->
+  <rect x="50" y="60" width="700" height="120" class="box" rx="10"/>
+  <text x="70" y="85" class="subtitle">JWT 完整结构：</text>
+  
+  <!-- Header -->
+  <rect x="70" y="100" width="200" height="30" fill="#ffe6e6" stroke="#ff6b6b" stroke-width="2" rx="5"/>
+  <text x="170" y="120" text-anchor="middle" class="jwt-part header-color">Header</text>
+  
+  <!-- Dot -->
+  <text x="280" y="120" text-anchor="middle" class="text">.</text>
+  
+  <!-- Payload -->
+  <rect x="290" y="100" width="200" height="30" fill="#e6fffe" stroke="#4ecdc4" stroke-width="2" rx="5"/>
+  <text x="390" y="120" text-anchor="middle" class="jwt-part payload-color">Payload</text>
+  
+  <!-- Dot -->
+  <text x="500" y="120" text-anchor="middle" class="text">.</text>
+  
+  <!-- Signature -->
+  <rect x="510" y="100" width="200" height="30" fill="#e6f3ff" stroke="#45b7d1" stroke-width="2" rx="5"/>
+  <text x="610" y="120" text-anchor="middle" class="jwt-part signature-color">Signature</text>
+  
+  <!-- Example JWT -->
+  <text x="70" y="155" class="small-text">示例：eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</text>
+  
+  <!-- Header Details -->
+  <rect x="50" y="200" width="220" height="120" class="box" rx="10"/>
+  <text x="160" y="225" text-anchor="middle" class="subtitle header-color">Header（头部）</text>
+  <text x="70" y="245" class="text">包含：</text>
+  <text x="70" y="265" class="small-text">• 算法类型 (alg)</text>
+  <text x="70" y="280" class="small-text">• Token类型 (typ)</text>
+  <text x="70" y="300" class="small-text">示例：</text>
+  <text x="70" y="315" class="small-text">{"alg":"HS256","typ":"JWT"}</text>
+  
+  <!-- Payload Details -->
+  <rect x="290" y="200" width="220" height="120" class="box" rx="10"/>
+  <text x="400" y="225" text-anchor="middle" class="subtitle payload-color">Payload（负载）</text>
+  <text x="310" y="245" class="text">包含声明 (Claims)：</text>
+  <text x="310" y="265" class="small-text">• iss (签发人)</text>
+  <text x="310" y="280" class="small-text">• exp (过期时间)</text>
+  <text x="310" y="295" class="small-text">• sub (主题)</text>
+  <text x="310" y="310" class="small-text">• 自定义声明...</text>
+  
+  <!-- Signature Details -->
+  <rect x="530" y="200" width="220" height="120" class="box" rx="10"/>
+  <text x="640" y="225" text-anchor="middle" class="subtitle signature-color">Signature（签名）</text>
+  <text x="550" y="245" class="text">用于验证：</text>
+  <text x="550" y="265" class="small-text">• 数据完整性</text>
+  <text x="550" y="280" class="small-text">• 防止篡改</text>
+  <text x="550" y="295" class="small-text">• 验证发送方身份</text>
+  <text x="550" y="310" class="small-text">使用密钥生成</text>
+  
+  <!-- Authentication Flow -->
+  <text x="400" y="370" text-anchor="middle" class="subtitle">认证流程</text>
+  
+  <!-- Client -->
+  <rect x="50" y="390" width="120" height="60" class="box" rx="10"/>
+  <text x="110" y="415" text-anchor="middle" class="text">客户端</text>
+  <text x="110" y="435" text-anchor="middle" class="small-text">(前端应用)</text>
+  
+  <!-- Auth Server -->
+  <rect x="340" y="390" width="120" height="60" class="box" rx="10"/>
+  <text x="400" y="415" text-anchor="middle" class="text">认证服务器</text>
+  <text x="400" y="435" text-anchor="middle" class="small-text">(生成JWT)</text>
+  
+  <!-- App Server -->
+  <rect x="630" y="390" width="120" height="60" class="box" rx="10"/>
+  <text x="690" y="415" text-anchor="middle" class="text">应用服务器</text>
+  <text x="690" y="435" text-anchor="middle" class="small-text">(验证JWT)</text>
+  
+  <!-- Arrows and Steps -->
+  <!-- Step 1: Login -->
+  <line x1="170" y1="410" x2="340" y2="410" class="arrow"/>
+  <text x="255" y="405" text-anchor="middle" class="small-text">1. 登录请求</text>
+  
+  <!-- Step 2: Return JWT -->
+  <line x1="340" y1="430" x2="170" y2="430" class="arrow"/>
+  <text x="255" y="445" text-anchor="middle" class="small-text">2. 返回JWT</text>
+  
+  <!-- Step 3: API Request with JWT -->
+  <line x1="170" y1="470" x2="630" y2="470" class="arrow"/>
+  <text x="400" y="465" text-anchor="middle" class="small-text">3. 携带JWT访问API</text>
+  
+  <!-- Step 4: Return Response -->
+  <line x1="630" y1="490" x2="170" y2="490" class="arrow"/>
+  <text x="400" y="505" text-anchor="middle" class="small-text">4. 验证通过，返回响应</text>
+  
+  <!-- Benefits -->
+  <text x="400" y="540" text-anchor="middle" class="subtitle">JWT 优势</text>
+  <text x="100" y="565" class="small-text">• 无状态：服务器无需存储会话</text>
+  <text x="100" y="580" class="small-text">• 跨域：支持不同域名间传递</text>
+  <text x="450" y="565" class="small-text">• 分布式：多服务共享认证</text>
+  <text x="450" y="580" class="small-text">• 性能：减少数据库查询</text>
+</svg>

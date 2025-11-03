@@ -1,0 +1,65 @@
+### Wrapper ###
+# 由SpringInitializr生成的Maven项目中带有，该目录文件用于提供一个简用的Maven支持，用于免配置Maven环境，即有了这玩意就相当于你已经配置过了Maven环境
+.mvn/wrapper/
+
+### Java ###
+# 编译后的Java代码，在Git中通常只保留有对应的项目的源代码而忽略编译后的文件
+*.class
+
+### Package File ###
+# 部分逻辑同上，忽略编译后的Java包
+*.war
+*.ear
+# 示例的部分压缩文件，项目需斟酌自行调整
+*.tar.gz
+*.rar
+*.7z
+
+### Maven Ignore ###
+# Maven项目运行或编译时生成的运行信息包含可运行的代码，同理只保存源码。另外一点 /target/ 和 target/的区别在于 /target/ 仅匹配项目根目录对应文件，而 target/将会匹配根目录下所有的target文件，使用 target/时会出现子目录使用target命名时被忽略的问题
+/target/
+/build/
+
+### Temp File ###
+# 一些常用的日志文件后缀
+*.log
+*.cache
+*.diff
+*.patch
+*.tmp
+push.bat
+
+### System Ignore ###
+# 一些系统方面的隐藏文件
+.DS_Store
+Thumbs.db
+
+### STS ###
+# spring tools suite
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+# Idea编辑器的一些临时配置
+.idea/
+/idea/
+*.ipr
+*.iml
+*.iws
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+/build/
+
+### VS Code ###
+.vscode/
+

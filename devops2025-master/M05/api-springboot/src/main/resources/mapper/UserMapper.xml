@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.user.mapper.UserMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="UserResultMap" type="com.example.demo.user.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="nickname" column="nickname"/>
+        <result property="phone" column="phone"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="bio" column="bio"/>
+        <result property="status" column="status"/>
+        <result property="emailVerified" column="email_verified"/>
+        <result property="phoneVerified" column="phone_verified"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="lastLoginIp" column="last_login_ip"/>
+        <result property="loginAttempts" column="login_attempts"/>
+        <result property="lockedUntil" column="locked_until"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+
+    <!-- 根据用户名查找用户 -->
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <!-- 根据邮箱查找用户 -->
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <!-- 根据ID查找用户 -->
+    <select id="findById" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <!-- 插入用户 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, email, password_hash, nickname, phone, avatar_url, bio, status, email_verified, phone_verified, login_attempts, created_at, updated_at)
+        VALUES (#{username}, #{email}, #{passwordHash}, #{nickname}, #{phone}, #{avatarUrl}, #{bio}, #{status}, #{emailVerified}, #{phoneVerified}, #{loginAttempts}, NOW(), NOW())
+    </insert>
+
+    <!-- 更新用户信息 -->
+    <update id="update">
+        UPDATE users 
+        SET username = #{username}, 
+            email = #{email}, 
+            nickname = #{nickname}, 
+            phone = #{phone}, 
+            avatar_url = #{avatarUrl}, 
+            bio = #{bio},
+            status = #{status}, 
+            email_verified = #{emailVerified},
+            phone_verified = #{phoneVerified},
+            login_attempts = #{loginAttempts},
+            locked_until = #{lockedUntil},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新密码 -->
+    <update id="updatePassword">
+        UPDATE users 
+        SET password_hash = #{passwordHash}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新最后登录时间 -->
+    <update id="updateLastLogin">
+        UPDATE users 
+        SET last_login_at = #{lastLoginAt}, 
+            last_login_ip = #{lastLoginIp},
+            login_attempts = 0, 
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新登录尝试次数 -->
+    <update id="updateLoginAttempts">
+        UPDATE users 
+        SET login_attempts = #{loginAttempts}, 
+            locked_until = #{lockedUntil}, 
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="deleteById">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+    <!-- 获取所有用户 -->
+    <select id="findAll" resultMap="UserResultMap">
+        SELECT * FROM users ORDER BY created_at DESC
+    </select>
+
+    <!-- 统计所有用户数量 -->
+    <select id="countAll" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM users
+    </select>
+
+    <!-- 根据状态统计用户数量 -->
+    <select id="countByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM users WHERE status = #{status}
+    </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/apps/list"
+  ],
+  "window": {
+    "navigationBarTitleText": "智能体应用列表",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#ffffff",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

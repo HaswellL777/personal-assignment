@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.role.mapper.RoleMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="RoleResultMap" type="com.example.demo.role.entity.Role">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="isSystem" column="is_system"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 查找所有角色 -->
+    <select id="findAll" resultMap="RoleResultMap">
+        SELECT id, name, code, description, status, is_system, created_at, updated_at
+        FROM roles
+        WHERE deleted_at IS NULL
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据ID查找角色 -->
+    <select id="findById" resultMap="RoleResultMap">
+        SELECT id, name, code, description, status, is_system, created_at, updated_at
+        FROM roles
+        WHERE id = #{id} AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据名称查找角色 -->
+    <select id="findByName" parameterType="string" resultMap="RoleResultMap">
+        SELECT id, name, code, description, status, is_system, created_at, updated_at
+        FROM roles
+        WHERE name = #{name} AND deleted_at IS NULL
+    </select>
+
+    <!-- 插入角色 -->
+    <insert id="insert" parameterType="com.example.demo.role.entity.Role" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO roles (name, code, description, status, is_system, created_at, updated_at)
+        VALUES (#{name}, #{code}, #{description}, #{status}, #{isSystem}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 更新角色 -->
+    <update id="update" parameterType="com.example.demo.role.entity.Role">
+        UPDATE roles
+        SET name = #{name},
+            description = #{description},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除角色（软删除） -->
+    <update id="deleteById" parameterType="long">
+        UPDATE roles
+        SET deleted_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 统计所有角色数量 -->
+    <select id="countAll" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM roles WHERE deleted_at IS NULL
+    </select>
+
+    <!-- 根据是否为系统角色统计数量 -->
+    <select id="countByIsSystem" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM roles WHERE is_system = #{isSystem} AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据用户ID查找角色代码列表 -->
+    <select id="findRoleCodesByUserId" resultType="java.lang.String">
+        SELECT r.code 
+        FROM roles r 
+        INNER JOIN user_roles ur ON r.id = ur.role_id 
+        WHERE ur.user_id = #{userId} AND r.deleted_at IS NULL
+    </select>
+
+</mapper>

@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: demo
+  datasource:
+    url: jdbc:mysql://101.201.127.215:3306/devops2025?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: devops2025
+    password: sspku2025
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: false
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# MyBatis 配置
+mybatis:
+  type-aliases-package: com.example.demo.*.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT 配置
+jwt:
+  secret: mySecretKey123456789012345678901234567890
+  expiration: 86400000
+
+# 日志配置
+logging:
+  level:
+    com.example.demo: DEBUG
+    org.springframework.security: DEBUG
