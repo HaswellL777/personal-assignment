@@ -14,10 +14,4 @@ public interface AppMapper {
 
     // 根据分类查询应用
     List<AppEntity> findByCategory(String category);
-
-    //按下载量从高到低
-    List<AppEntity> findAllOrderByDownloadsDesc();
-
-    //按评分从高到低
-    List<AppEntity> findAllOrderByRatingDesc();
 }

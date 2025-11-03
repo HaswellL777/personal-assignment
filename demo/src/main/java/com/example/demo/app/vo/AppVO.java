@@ -1,5 +1,6 @@
 package com.example.demo.app.vo;
 
+
 import lombok.*;
 
 import java.math.BigDecimal;

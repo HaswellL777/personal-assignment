@@ -1,5 +1,5 @@
-// src/main/java/com/example/demo/app/entity/AppEntity.java
 package com.example.demo.app.entity;
+
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
