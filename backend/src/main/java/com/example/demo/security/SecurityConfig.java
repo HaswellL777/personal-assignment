@@ -39,6 +39,7 @@ public class SecurityConfig {
                 // 允许访问的公开接口
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/apps/**").permitAll()
+                .requestMatchers("/api/ping").permitAll()
                 .requestMatchers("/hello").permitAll()
                 // 系统管理接口需要认证
                 .requestMatchers("/api/system/**").authenticated()

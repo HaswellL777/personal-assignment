@@ -240,8 +240,8 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(password));
         user.setNickname(username); // 默认昵称为用户名
         user.setStatus(1); // 默认激活状态
-        user.setEmailVerified(false);
-        user.setPhoneVerified(false);
+        user.setEmailVerified(0); // 0表示未验证
+        user.setPhoneVerified(0); // 0表示未验证
         user.setLoginAttempts(0);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
