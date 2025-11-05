@@ -116,22 +116,22 @@ const fetchMenus = async () => {
   error.value = ''
   loading.value = true
   try {
-    const token = localStorage.getItem('auth_token') || ''
+    const token = localStorage.getItem('token') || ''
     const res = await fetch('/api/v1/menus', {
       headers: {
         'Accept': 'application/json',
         'Authorization': token ? `Bearer ${token}` : ''
       }
     })
-    
+
     const text = await res.text()
     let data
-    try { 
-      data = JSON.parse(text) 
-    } catch { 
-      data = text 
+    try {
+      data = JSON.parse(text)
+    } catch {
+      data = text
     }
-    
+
     if (res.ok) {
       menus.value = data?.data || []
       // 从token中提取用户名
@@ -140,8 +140,8 @@ const fetchMenus = async () => {
         userAvatar.value = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.value}`
       }
     } else {
-      const msg = typeof data === 'object' ? 
-        (data.message || data.error || data.detail || '菜单加载失败') : 
+      const msg = typeof data === 'object' ?
+        (data.message || data.error || data.detail || '菜单加载失败') :
         String(data)
       error.value = msg
       if (res.status === 401) {
@@ -166,7 +166,7 @@ const handleMenuSelect = (index) => {
 const handleCommand = (command) => {
   switch (command) {
     case 'profile':
-      router.push('/profile')
+      router.push('/home/profile')
       break
     case 'logout':
       handleLogout()
@@ -186,8 +186,8 @@ const handleLogout = async () => {
         type: 'warning',
       }
     )
-    
-    localStorage.removeItem('auth_token')
+
+    localStorage.removeItem('token')
     ElMessage.success('已退出登录')
     router.push('/')
   } catch {

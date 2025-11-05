@@ -3,7 +3,9 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 // 默认填写测试账号，便于直接点击登录验证联通性
-const form = reactive({ username: 'tester', password: '123456' })
+// 管理员：admin / 123456
+// 普通用户：user / 123456
+const form = reactive({ username: 'admin', password: '123456' })
 const message = ref('')
 const loading = ref(false)
 const token = ref('')
@@ -38,7 +40,7 @@ async function login() {
       if (maybeToken) {
         token.value = maybeToken
         // 将 token 存储到本地，便于后续接口调用
-        try { localStorage.setItem('auth_token', maybeToken) } catch {}
+        try { localStorage.setItem('token', maybeToken) } catch {}
         // 跳转到 Home 页面
         router.push('/home')
       }
@@ -52,7 +54,7 @@ async function login() {
       }
       message.value = errMsg
       // 登录失败时清理本地可能存在的旧 token
-      try { localStorage.removeItem('auth_token') } catch {}
+      try { localStorage.removeItem('token') } catch {}
     }
   } catch (e) {
     message.value = '网络错误或服务不可用'

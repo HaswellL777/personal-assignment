@@ -4,7 +4,7 @@ import Layout from '../components/Layout.vue'
 import Home from '../pages/Home.vue'
 import Dashboard from '../pages/Dashboard.vue'
 import Apps from '../pages/Apps.vue'
-import UserProfile from '../pages/UserProfile.vue'
+import Profile from '../pages/Profile.vue'
 
 const routes = [
   { path: '/', name: 'login', component: Login, meta: { requiresAuth: false } },
@@ -16,7 +16,7 @@ const routes = [
       { path: '', name: 'home', component: Home },
       { path: 'dashboard', name: 'dashboard', component: Dashboard },
       { path: 'apps', name: 'apps', component: Apps },
-      { path: 'profile', name: 'profile', component: UserProfile },
+      { path: 'profile', name: 'profile', component: Profile },
     ]
   },
 ]
@@ -26,22 +26,29 @@ const router = createRouter({
   routes,
 })
 
-// 全局路由守卫：只有登录页可无 token 打开，其余页面必须登录
-router.beforeEach((to, from, next) => {
-  let token = ''
-  try { token = localStorage.getItem('auth_token') || '' } catch {}
+// 全局路由守卫
+// 要求：
+// 1. 未登录用户仅可访问登录页
+// 2. 已登录用户访问登录页时自动跳转首页
+// 3. Token 失效时自动跳转登录页
+router.beforeEach((to, _from, next) => {
+  const token = localStorage.getItem('token')
 
-  // 已登录情况下，访问登录页则直接跳转到首页
-  if (to.name === 'login' && token) {
-    return next({ name: 'home' })
+  if (to.path === '/') {
+    // 登录页面
+    if (token) {
+      next('/home')
+    } else {
+      next()
+    }
+  } else {
+    // 其他页面需要登录
+    if (token) {
+      next()
+    } else {
+      next('/')
+    }
   }
-
-  // 需要鉴权的路由且无 token，强制跳回登录页
-  if (to.matched.some(record => record.meta?.requiresAuth) && !token) {
-    return next({ name: 'login' })
-  }
-
-  next()
 })
 
 export default router

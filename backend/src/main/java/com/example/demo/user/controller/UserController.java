@@ -69,6 +69,17 @@ public class UserController {
             userProfile.setLastLoginAt(user.getLastLoginAt());
             userProfile.setCreatedAt(user.getCreatedAt());
 
+            // 根据用户名设置角色和部门信息（演示用）
+            if ("admin".equals(username)) {
+                userProfile.setRole("admin");
+                userProfile.setDepartment("技术部");
+                userProfile.setPosition("系统管理员");
+            } else {
+                userProfile.setRole("user");
+                userProfile.setDepartment("业务部");
+                userProfile.setPosition("普通用户");
+            }
+
             return ApiResponse.ok(userProfile);
 
         } catch (Exception e) {
@@ -164,6 +175,9 @@ public class UserController {
         private Boolean phoneVerified;
         private java.time.LocalDateTime lastLoginAt;
         private java.time.LocalDateTime createdAt;
+        private String role;
+        private String department;
+        private String position;
 
         // Getters and Setters
         public Long getId() { return id; }
@@ -201,5 +215,14 @@ public class UserController {
 
         public java.time.LocalDateTime getCreatedAt() { return createdAt; }
         public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+
+        public String getDepartment() { return department; }
+        public void setDepartment(String department) { this.department = department; }
+
+        public String getPosition() { return position; }
+        public void setPosition(String position) { this.position = position; }
     }
 }
