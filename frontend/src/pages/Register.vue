@@ -2,54 +2,45 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const form = reactive({ username: '', password: '' })
+const form = reactive({ username: '', password: '', confirmPassword: '', email: '' })
 const message = ref('')
 const loading = ref(false)
-const token = ref('')
 const router = useRouter()
 
-// 根据你的后端实际接口路径进行调整，例如：/api/v1/auth/login 或 /login
-const LOGIN_PATH = '/api/v1/auth/login'
+const REGISTER_PATH = '/api/v1/auth/register'
 
-async function login() {
+async function register() {
   message.value = ''
-  token.value = ''
-  if (!form.username || !form.password) {
-    message.value = '请输入用户名和密码'
+  if (!form.username || !form.password || !form.email) {
+    message.value = '请填写所有必填项'
+    return
+  }
+  if (form.password !== form.confirmPassword) {
+    message.value = '两次输入的密码不一致'
     return
   }
   loading.value = true
   try {
-    const res = await fetch(LOGIN_PATH, {
+    const res = await fetch(REGISTER_PATH, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: form.username, password: form.password }),
+      body: JSON.stringify({ username: form.username, password: form.password, email: form.email }),
     })
     const text = await res.text()
-    // 尝试解析 JSON；后端可能返回纯文本或 JSON
     let data
     try { data = JSON.parse(text) } catch { data = text }
 
     if (res.ok && data?.code === 0) {
-      message.value = '登录成功'
-      // 后端返回格式为 { code: 0, message: 'OK', data: { token: '...', user: {...} } }
-      const maybeToken = data?.data?.token || ''
-      if (maybeToken) {
-        token.value = maybeToken
-        try { localStorage.setItem('token', maybeToken) } catch {}
-        router.push('/home')
-      }
+      message.value = '注册成功，即将跳转登录页...'
+      setTimeout(() => router.push('/'), 1500)
     } else {
-      // 如果后端有错误消息，优先展示（兼容 FastAPI 的 { detail } 错误格式）
-      let errMsg = '登录失败'
+      let errMsg = '注册失败'
       if (typeof data === 'object') {
         errMsg = data.message || data.error || data.detail || errMsg
       } else if (typeof data === 'string') {
         errMsg = data
       }
       message.value = errMsg
-      // 登录失败时清理本地可能存在的旧 token
-      try { localStorage.removeItem('token') } catch {}
     }
   } catch (e) {
     message.value = '网络错误或服务不可用'
@@ -68,7 +59,7 @@ async function login() {
         <div class="shape shape-3"></div>
       </div>
     </div>
-    
+
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
@@ -76,65 +67,83 @@ async function login() {
             <i class="el-icon-s-platform"></i>
           </div>
           <h1 class="title">DevOps 管理平台</h1>
-          <p class="subtitle">欢迎回来，请登录您的账户</p>
+          <p class="subtitle">创建您的账户</p>
         </div>
-        
+
         <div class="login-form">
           <div class="form-item">
             <label class="form-label">
               <i class="el-icon-user"></i>
               用户名
             </label>
-            <input 
-              v-model="form.username" 
-              type="text" 
-              placeholder="请输入用户名" 
+            <input
+              v-model="form.username"
+              type="text"
+              placeholder="请输入用户名"
               class="form-input"
             />
           </div>
-          
+
+          <div class="form-item">
+            <label class="form-label">
+              <i class="el-icon-message"></i>
+              邮箱
+            </label>
+            <input
+              v-model="form.email"
+              type="email"
+              placeholder="请输入邮箱"
+              class="form-input"
+            />
+          </div>
+
           <div class="form-item">
             <label class="form-label">
               <i class="el-icon-lock"></i>
               密码
             </label>
-            <input 
-              v-model="form.password" 
-              type="password" 
-              placeholder="请输入密码" 
+            <input
+              v-model="form.password"
+              type="password"
+              placeholder="请输入密码"
               class="form-input"
-              @keyup.enter="login"
             />
           </div>
-          
-          <button 
-            :disabled="loading" 
-            @click="login"
+
+          <div class="form-item">
+            <label class="form-label">
+              <i class="el-icon-lock"></i>
+              确认密码
+            </label>
+            <input
+              v-model="form.confirmPassword"
+              type="password"
+              placeholder="请再次输入密码"
+              class="form-input"
+              @keyup.enter="register"
+            />
+          </div>
+
+          <button
+            :disabled="loading"
+            @click="register"
             class="login-button"
             :class="{ 'loading': loading }"
           >
             <span v-if="loading" class="loading-spinner"></span>
-            {{ loading ? '登录中...' : '登录' }}
+            {{ loading ? '注册中...' : '注册' }}
           </button>
-          
-          <div v-if="message" class="message" :class="{ 'success': message === '登录成功', 'error': message !== '登录成功' }">
-            <i :class="message === '登录成功' ? 'el-icon-success' : 'el-icon-warning'"></i>
+
+          <div v-if="message" class="message" :class="{ 'success': message.includes('成功'), 'error': !message.includes('成功') }">
+            <i :class="message.includes('成功') ? 'el-icon-success' : 'el-icon-warning'"></i>
             {{ message }}
-          </div>
-          
-          <div v-if="token" class="token-display">
-            <div class="token-label">
-              <i class="el-icon-key"></i>
-              Token 已生成
-            </div>
-            <div class="token-value">{{ token }}</div>
           </div>
 
           <div class="register-link">
-            还没有账户？<router-link to="/register">立即注册</router-link>
+            已有账户？<router-link to="/">立即登录</router-link>
           </div>
         </div>
-        
+
         <div class="login-footer">
           <p class="footer-text">© 2025 DevOps 管理平台. All rights reserved.</p>
         </div>
@@ -144,7 +153,6 @@ async function login() {
 </template>
 
 <style scoped>
-/* 登录页面整体布局 */
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -155,7 +163,6 @@ async function login() {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-/* 背景装饰 */
 .login-background {
   position: absolute;
   top: 0;
@@ -211,7 +218,6 @@ async function login() {
   }
 }
 
-/* 登录容器 */
 .login-container {
   position: relative;
   z-index: 2;
@@ -220,7 +226,6 @@ async function login() {
   padding: 20px;
 }
 
-/* 登录卡片 */
 .login-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
@@ -242,10 +247,9 @@ async function login() {
   }
 }
 
-/* 登录头部 */
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .logo {
@@ -280,13 +284,12 @@ async function login() {
   font-weight: 400;
 }
 
-/* 表单样式 */
 .login-form {
   margin-bottom: 30px;
 }
 
 .form-item {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .form-label {
@@ -326,7 +329,6 @@ async function login() {
   color: #a0aec0;
 }
 
-/* 登录按钮 */
 .login-button {
   width: 100%;
   padding: 16px;
@@ -379,7 +381,6 @@ async function login() {
   }
 }
 
-/* 消息提示 */
 .message {
   display: flex;
   align-items: center;
@@ -418,46 +419,10 @@ async function login() {
   }
 }
 
-/* Token 显示 */
-.token-display {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.token-label {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #4a5568;
-  margin-bottom: 8px;
-}
-
-.token-label i {
-  margin-right: 8px;
-  color: #38a169;
-}
-
-.token-value {
-  font-size: 12px;
-  color: #718096;
-  word-break: break-all;
-  background: white;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
-  font-family: 'Courier New', monospace;
-}
-
-/* 注册链接 */
 .register-link {
   text-align: center;
   font-size: 14px;
   color: #718096;
-  margin-top: 16px;
 }
 
 .register-link a {
@@ -470,7 +435,6 @@ async function login() {
   text-decoration: underline;
 }
 
-/* 页脚 */
 .login-footer {
   text-align: center;
   border-top: 1px solid #e2e8f0;
@@ -483,77 +447,68 @@ async function login() {
   margin: 0;
 }
 
-/* 响应式设计 */
 @media (max-width: 480px) {
   .login-container {
     padding: 16px;
   }
-  
+
   .login-card {
     padding: 30px 20px;
     border-radius: 16px;
   }
-  
+
   .title {
     font-size: 24px;
   }
-  
+
   .subtitle {
     font-size: 14px;
   }
-  
+
   .form-input {
     padding: 12px 14px;
     font-size: 14px;
   }
-  
+
   .login-button {
     padding: 14px;
     font-size: 14px;
   }
 }
 
-/* 暗色模式支持 */
 @media (prefers-color-scheme: dark) {
   .login-card {
     background: rgba(26, 32, 44, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   .title {
     color: #f7fafc;
   }
-  
+
   .subtitle {
     color: #a0aec0;
   }
-  
+
   .form-label {
     color: #e2e8f0;
   }
-  
+
   .form-input {
     background: #2d3748;
     border-color: #4a5568;
     color: #f7fafc;
   }
-  
+
   .form-input:focus {
     background: #1a202c;
     border-color: #667eea;
   }
-  
-  .token-display {
-    background: #2d3748;
-    border-color: #4a5568;
+
+  .register-link {
+    color: #a0aec0;
   }
-  
-  .token-value {
-    background: #1a202c;
-    border-color: #4a5568;
-    color: #e2e8f0;
-  }
-  
+
   .login-footer {
     border-top-color: #4a5568;
   }

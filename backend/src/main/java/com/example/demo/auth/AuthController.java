@@ -8,13 +8,18 @@ import com.example.demo.common.BusinessException;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserService userService;
@@ -29,13 +34,14 @@ public class AuthController {
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         // 注册用户
         User user = userService.register(request);
-        
+
         // 生成JWT token
         String token = jwtUtil.generateToken(user.getUsername(), user.getId());
-        
+
         // 构建响应
         AuthResponse response = new AuthResponse(token, user);
-        
+
+        logger.info("用户注册成功: {}", user.getUsername());
         return ApiResponse.ok(response);
     }
 
@@ -43,29 +49,28 @@ public class AuthController {
      * 用户登录
      */
     @PostMapping("/login")
-    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
             // 验证用户凭据
-            User user = userService.login(request);
-            System.out.println("用户登录验证成功: " + user.getUsername() + ", ID: " + user.getId());
-            
+            User user = userService.login(request, httpRequest);
+            logger.info("用户登录验证成功: {}, ID: {}", user.getUsername(), user.getId());
+
             // 生成JWT token
             String token = jwtUtil.generateToken(user.getUsername(), user.getId());
-            System.out.println("JWT token生成成功: " + token.substring(0, 20) + "...");
-            
+            logger.debug("JWT token生成成功");
+
             // 构建响应
             AuthResponse authResponse = new AuthResponse();
             authResponse.setToken(token);
             authResponse.setUser(user);
-            
-            System.out.println("登录成功，返回响应");
+
+            logger.info("用户 {} 登录成功", user.getUsername());
             return ApiResponse.ok(authResponse);
         } catch (BusinessException e) {
-            System.out.println("BusinessException: " + e.getMessage());
+            logger.warn("登录失败 - BusinessException: {}", e.getMessage());
             return ApiResponse.fail(e.getCode(), e.getMessage());
         } catch (Exception e) {
-            System.out.println("其他异常: " + e.getClass().getName() + " - " + e.getMessage());
-            e.printStackTrace();
+            logger.error("登录失败 - 异常: {} - {}", e.getClass().getName(), e.getMessage(), e);
             return ApiResponse.fail(50000, "登录失败");
         }
     }
@@ -76,6 +81,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout() {
         // JWT是无状态的，客户端删除token即可
+        logger.debug("用户登出");
         return ApiResponse.ok();
     }
 }

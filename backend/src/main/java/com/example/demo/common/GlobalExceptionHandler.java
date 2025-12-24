@@ -1,6 +1,7 @@
 package com.example.demo.common;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +12,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // 业务异常（主动抛出）
     @ExceptionHandler(BusinessException.class)
@@ -43,7 +46,8 @@ public class GlobalExceptionHandler {
     // 500：兜底（未预料的异常）
     @ExceptionHandler(Exception.class)
     public ApiResponse<Void> handleOthers(Exception ex) {
-        // 生产环境建议记录日志/告警
+        // 记录异常堆栈到日志，便于排查问题
+        logger.error("服务器异常: {}", ex.getMessage(), ex);
         return ApiResponse.fail(50000, "服务器异常，请稍后再试");
     }
 }

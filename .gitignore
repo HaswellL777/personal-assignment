@@ -16,3 +16,9 @@ backend/target/
 # OS
 .DS_Store
 Thumbs.db
+
+# Env
+.env
+
+# Frontend build
+frontend/dist/

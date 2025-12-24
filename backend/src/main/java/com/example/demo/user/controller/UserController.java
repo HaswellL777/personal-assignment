@@ -6,13 +6,17 @@ import com.example.demo.user.service.UserService;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.user.dto.UpdateProfileRequest;
 import com.example.demo.user.dto.ChangePasswordRequest;
+import com.example.demo.user.dto.UserProfileResponse;
 import com.example.demo.common.BusinessException;
+import com.example.demo.role.mapper.RoleMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
+import java.util.List;
 
 /**
  * 用户控制器
@@ -26,6 +30,9 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     /**
      * 获取当前用户信息
@@ -69,11 +76,20 @@ public class UserController {
             userProfile.setLastLoginAt(user.getLastLoginAt());
             userProfile.setCreatedAt(user.getCreatedAt());
 
-            // 根据用户名设置角色和部门信息（演示用）
-            if ("admin".equals(username)) {
-                userProfile.setRole("admin");
-                userProfile.setDepartment("技术部");
-                userProfile.setPosition("系统管理员");
+            // 从数据库查询用户角色
+            List<String> roles = roleMapper.findRoleCodesByUserId(user.getId());
+            if (roles != null && !roles.isEmpty()) {
+                // 使用第一个角色作为主角色
+                userProfile.setRole(roles.get(0));
+                // 如果有ADMIN角色，设置为admin
+                if (roles.contains("ADMIN")) {
+                    userProfile.setRole("admin");
+                    userProfile.setDepartment("技术部");
+                    userProfile.setPosition("系统管理员");
+                } else {
+                    userProfile.setDepartment("业务部");
+                    userProfile.setPosition("普通用户");
+                }
             } else {
                 userProfile.setRole("user");
                 userProfile.setDepartment("业务部");
@@ -157,72 +173,5 @@ public class UserController {
             return bearerToken.substring(7);
         }
         return null;
-    }
-
-    /**
-     * 用户信息响应类
-     */
-    public static class UserProfileResponse {
-        private Long id;
-        private String username;
-        private String email;
-        private String phone;
-        private String nickname;
-        private String avatarUrl;
-        private String bio;
-        private Integer status;
-        private Boolean emailVerified;
-        private Boolean phoneVerified;
-        private java.time.LocalDateTime lastLoginAt;
-        private java.time.LocalDateTime createdAt;
-        private String role;
-        private String department;
-        private String position;
-
-        // Getters and Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-
-        public String getPhone() { return phone; }
-        public void setPhone(String phone) { this.phone = phone; }
-
-        public String getNickname() { return nickname; }
-        public void setNickname(String nickname) { this.nickname = nickname; }
-
-        public String getAvatarUrl() { return avatarUrl; }
-        public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-
-        public String getBio() { return bio; }
-        public void setBio(String bio) { this.bio = bio; }
-
-        public Integer getStatus() { return status; }
-        public void setStatus(Integer status) { this.status = status; }
-
-        public Boolean getEmailVerified() { return emailVerified; }
-        public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
-
-        public Boolean getPhoneVerified() { return phoneVerified; }
-        public void setPhoneVerified(Boolean phoneVerified) { this.phoneVerified = phoneVerified; }
-
-        public java.time.LocalDateTime getLastLoginAt() { return lastLoginAt; }
-        public void setLastLoginAt(java.time.LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
-
-        public java.time.LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-        public String getRole() { return role; }
-        public void setRole(String role) { this.role = role; }
-
-        public String getDepartment() { return department; }
-        public void setDepartment(String department) { this.department = department; }
-
-        public String getPosition() { return position; }
-        public void setPosition(String position) { this.position = position; }
     }
 }

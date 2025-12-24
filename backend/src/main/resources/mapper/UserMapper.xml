@@ -34,6 +34,11 @@
         SELECT * FROM users WHERE email = #{email}
     </select>
 
+    <!-- 根据手机号查找用户 -->
+    <select id="findByPhone" resultMap="UserResultMap">
+        SELECT * FROM users WHERE phone = #{phone}
+    </select>
+
     <!-- 根据ID查找用户 -->
     <select id="findById" resultMap="UserResultMap">
         SELECT * FROM users WHERE id = #{id}
@@ -47,14 +52,15 @@
 
     <!-- 更新用户信息 -->
     <update id="update">
-        UPDATE users 
-        SET username = #{username}, 
-            email = #{email}, 
-            nickname = #{nickname}, 
-            phone = #{phone}, 
-            avatar_url = #{avatarUrl}, 
+        UPDATE users
+        SET username = #{username},
+            email = #{email},
+            password_hash = #{passwordHash},
+            nickname = #{nickname},
+            phone = #{phone},
+            avatar_url = #{avatarUrl},
             bio = #{bio},
-            status = #{status}, 
+            status = #{status},
             email_verified = #{emailVerified},
             phone_verified = #{phoneVerified},
             login_attempts = #{loginAttempts},

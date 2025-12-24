@@ -3,10 +3,12 @@ package com.example.demo.admin;
 import com.example.demo.common.ApiResponse;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.user.service.UserService;
+import com.example.demo.role.mapper.RoleMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,6 +24,9 @@ public class AdminOperationController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     /**
      * 删除用户（模拟管理员操作，用于权限验证演示）
@@ -43,16 +48,17 @@ public class AdminOperationController {
                 return ApiResponse.fail(401, "token无效或已过期");
             }
 
-            String username = jwtUtil.getUsernameFromToken(token);
+            Long userId = jwtUtil.getUserIdFromToken(token);
 
-            // 权限验证：只有管理员才能删除用户
-            if (!"admin".equals(username)) {
+            // 权限验证：从数据库查询用户角色，只有管理员才能删除用户
+            List<String> roles = roleMapper.findRoleCodesByUserId(userId);
+            if (roles == null || !roles.contains("ADMIN")) {
                 return ApiResponse.fail(403, "权限不足：您没有执行此操作的权限");
             }
 
             // 如果是管理员，执行操作（这里只是模拟，不实际删除）
-            String userId = (String) request.get("userId");
-            return ApiResponse.ok("管理员操作成功：已删除用户 " + userId);
+            String targetUserId = (String) request.get("userId");
+            return ApiResponse.ok("管理员操作成功：已删除用户 " + targetUserId);
 
         } catch (Exception e) {
             return ApiResponse.fail(500, "操作失败: " + e.getMessage());

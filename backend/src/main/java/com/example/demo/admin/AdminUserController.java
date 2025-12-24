@@ -5,6 +5,7 @@ import com.example.demo.user.entity.User;
 import com.example.demo.user.service.UserService;
 import com.example.demo.user.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,9 +14,11 @@ import java.util.HashMap;
 
 /**
  * 管理员用户管理控制器
+ * 所有接口需要 ADMIN 角色才能访问
  */
 @RestController
 @RequestMapping("/api/v1/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
     @Autowired

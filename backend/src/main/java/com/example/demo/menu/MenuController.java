@@ -1,8 +1,11 @@
 package com.example.demo.menu;
 
 import com.example.demo.common.ApiResponse;
+import com.example.demo.role.mapper.RoleMapper;
 import com.example.demo.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +22,16 @@ import java.util.Map;
 @RequestMapping("/api/v1")
 public class MenuController {
 
+    private static final Logger logger = LoggerFactory.getLogger(MenuController.class);
+
+    // 管理员角色代码
+    private static final String ROLE_ADMIN = "ADMIN";
+
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     /**
      * 获取当前用户的菜单列表
@@ -37,31 +48,41 @@ public class MenuController {
 
             String token = authHeader.substring(7);
 
-            // 验证token并获取用户名
+            // 验证token并获取用户信息
             if (!jwtUtil.validateToken(token)) {
                 return ApiResponse.fail(401, "token无效或已过期");
             }
 
+            Long userId = jwtUtil.getUserIdFromToken(token);
             String username = jwtUtil.getUsernameFromToken(token);
+            logger.debug("获取用户菜单，用户ID: {}, 用户名: {}", userId, username);
 
-            // 根据用户名判断角色并返回对应菜单
+            // 从数据库查询用户角色
+            List<String> userRoles = roleMapper.findRoleCodesByUserId(userId);
+            boolean isAdmin = userRoles != null && userRoles.contains(ROLE_ADMIN);
+            logger.debug("用户 {} 的角色: {}, 是否管理员: {}", username, userRoles, isAdmin);
+
+            // 根据角色返回对应菜单
             List<Map<String, Object>> menus = new ArrayList<>();
 
-            if ("admin".equals(username)) {
+            if (isAdmin) {
                 // 管理员菜单 - 可见所有菜单
                 menus.add(createMenuItem("/home", "首页", "dashboard"));
                 menus.add(createMenuItem("/home/dashboard", "数据面板", "dashboard"));
                 menus.add(createMenuItem("/home/apps", "应用管理", "apps"));
+                menus.add(createMenuItem("/home/ai", "AI 助手", "chat"));
                 menus.add(createMenuItem("/home/profile", "个人信息", "user"));
             } else {
                 // 普通用户菜单 - 只能看到基础菜单
                 menus.add(createMenuItem("/home", "首页", "dashboard"));
+                menus.add(createMenuItem("/home/ai", "AI 助手", "chat"));
                 menus.add(createMenuItem("/home/profile", "个人信息", "user"));
             }
 
             return ApiResponse.ok(menus);
 
         } catch (Exception e) {
+            logger.error("获取菜单失败", e);
             return ApiResponse.fail(500, "获取菜单失败: " + e.getMessage());
         }
     }

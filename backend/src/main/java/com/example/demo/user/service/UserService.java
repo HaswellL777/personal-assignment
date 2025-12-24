@@ -6,10 +6,13 @@ import com.example.demo.common.BusinessException;
 import com.example.demo.common.ErrorCode;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.mapper.UserMapper;
+import com.example.demo.util.IpUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
@@ -22,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Autowired
     private UserMapper userMapper;
@@ -71,107 +75,92 @@ public class UserService {
     /**
      * 用户登录
      */
-    public User login(LoginRequest request) {
-        logger.info("开始登录验证，用户标识: {}", request.getUsername());
-        
+    public User login(LoginRequest request, HttpServletRequest httpRequest) {
+        logger.debug("开始登录验证");
+
         // 查找用户（支持用户名、邮箱、手机号登录）
         User user = null;
         String loginField = request.getUsername();
-        
+
         if (loginField.contains("@")) {
             // 邮箱登录
             user = userMapper.findByEmail(loginField);
-            logger.info("通过邮箱查找用户: {}", loginField);
+            logger.debug("通过邮箱查找用户");
         } else if (loginField.matches("^1[3-9]\\d{9}$")) {
             // 手机号登录
             user = userMapper.findByPhone(loginField);
-            logger.info("通过手机号查找用户: {}", loginField);
+            logger.debug("通过手机号查找用户");
         } else {
             // 用户名登录
             user = userMapper.findByUsername(loginField);
-            logger.info("通过用户名查找用户: {}", loginField);
+            logger.debug("通过用户名查找用户");
         }
-        
+
         if (user == null) {
-            logger.warn("用户不存在: {}", loginField);
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+            logger.debug("登录失败: 用户不存在 - {}", loginField);
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "用户名或密码错误");
         }
-        
-        logger.info("找到用户: {}, ID: {}, 状态: {}", user.getUsername(), user.getId(), user.getStatus());
-        
+
+        logger.debug("找到用户ID: {}, 状态: {}", user.getId(), user.getStatus());
+
         // 检查用户状态
         if (user.getStatus() != 1) {
-            logger.warn("用户已被禁用: {}", user.getUsername());
+            logger.debug("登录失败: 用户已被禁用");
             throw new BusinessException(ErrorCode.USER_DISABLED, "用户已被禁用");
         }
-        
+
         // 检查是否被锁定
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
-            logger.warn("用户已被锁定: {}, 锁定到: {}", user.getUsername(), user.getLockedUntil());
+            logger.debug("登录失败: 用户已被锁定至 {}", user.getLockedUntil());
             throw new BusinessException(ErrorCode.USER_LOCKED, "用户已被锁定");
         }
-        
+
         // 验证密码
-        logger.info("开始验证密码，用户: {}", user.getUsername());
-        logger.debug("输入密码: {}", request.getPassword());
-        logger.debug("存储的密码哈希: {}", user.getPasswordHash());
+        logger.debug("开始验证密码");
 
         boolean passwordMatches = false;
 
-        // 检查密码哈希格式
-        if (user.getPasswordHash().startsWith("$2a$") || user.getPasswordHash().startsWith("$2b$")) {
-            // BCrypt 格式，使用 BCrypt 验证
-            logger.debug("使用 BCrypt 验证");
+        // 检查密码哈希格式 - 仅支持BCrypt格式
+        if (user.getPasswordHash() != null &&
+            (user.getPasswordHash().startsWith("$2a$") || user.getPasswordHash().startsWith("$2b$"))) {
             passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
         } else {
-            // 旧格式或测试环境，支持明文密码 "123456"
-            logger.debug("使用兼容模式验证（旧密码格式）");
-            // 这里假设测试密码是 "123456"
-            passwordMatches = "123456".equals(request.getPassword());
-
-            if (passwordMatches) {
-                logger.info("使用兼容模式验证成功，建议更新为 BCrypt 格式");
-            }
+            // 密码格式无效，需要管理员重置密码
+            logger.debug("密码格式无效，需要重置密码");
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "密码格式无效，请联系管理员重置密码");
         }
 
-        logger.info("密码验证结果: {}", passwordMatches);
-        
+        logger.debug("密码验证完成");
+
         if (!passwordMatches) {
             // 增加登录失败次数
             user.setLoginAttempts(user.getLoginAttempts() + 1);
-            logger.warn("密码验证失败，登录失败次数: {}", user.getLoginAttempts());
-            
+            logger.debug("密码验证失败，登录失败次数: {}", user.getLoginAttempts());
+
             if (user.getLoginAttempts() >= 5) {
                 // 锁定用户30分钟
                 user.setLockedUntil(LocalDateTime.now().plusMinutes(30));
-                logger.warn("用户被锁定30分钟: {}", user.getUsername());
+                logger.warn("用户因多次登录失败被锁定30分钟, 用户ID: {}", user.getId());
             }
             userMapper.update(user);
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "密码错误");
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "用户名或密码错误");
         }
-        
-        logger.info("登录成功: {}", user.getUsername());
-        
+
+        logger.debug("登录成功, 用户ID: {}", user.getId());
+
         // 登录成功，重置登录失败次数
         if (user.getLoginAttempts() > 0) {
             user.setLoginAttempts(0);
             user.setLockedUntil(null);
             userMapper.update(user);
-            logger.info("重置登录失败次数: {}", user.getUsername());
+            logger.debug("重置登录失败次数");
         }
-        
+
         // 更新最后登录信息
-        userMapper.updateLastLogin(user.getId(), LocalDateTime.now(), getClientIp());
-        
+        String clientIp = IpUtil.getClientIp(httpRequest);
+        userMapper.updateLastLogin(user.getId(), LocalDateTime.now(), clientIp);
+
         return user;
-    }
-    
-    /**
-     * 获取客户端IP（简化实现）
-     */
-    private String getClientIp() {
-        // 这里简化处理，实际应该从HttpServletRequest中获取
-        return "127.0.0.1";
     }
 
     /**
@@ -363,14 +352,14 @@ public class UserService {
     }
 
     /**
-     * 生成临时密码
+     * 生成临时密码（使用安全随机数）
      */
     private String generateTemporaryPassword() {
-        // 生成8位随机密码
+        // 生成12位随机密码，包含大小写字母和数字
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder password = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
-            password.append(chars.charAt((int) (Math.random() * chars.length())));
+        for (int i = 0; i < 12; i++) {
+            password.append(chars.charAt(SECURE_RANDOM.nextInt(chars.length())));
         }
         return password.toString();
     }

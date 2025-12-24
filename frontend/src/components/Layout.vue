@@ -81,7 +81,8 @@ import {
   User,
   UserFilled,
   Setting,
-  Lock
+  Lock,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -106,7 +107,8 @@ const getMenuIcon = (iconName) => {
     user: User,
     users: UserFilled,
     roles: Setting,
-    shield: Lock
+    shield: Lock,
+    chat: ChatDotRound
   }
   return iconMap[iconName] || House
 }
@@ -134,11 +136,19 @@ const fetchMenus = async () => {
 
     if (res.ok) {
       menus.value = data?.data || []
-      // 从token中提取用户名
+      // 从token中提取用户名（支持mock-token和真实JWT）
       if (token.startsWith('mock-token-')) {
         currentUser.value = token.replace('mock-token-', '')
-        userAvatar.value = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.value}`
+      } else if (token) {
+        // 解析JWT token获取用户名
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          currentUser.value = payload.sub || payload.username || '用户'
+        } catch {
+          currentUser.value = '用户'
+        }
       }
+      userAvatar.value = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.value}`
     } else {
       const msg = typeof data === 'object' ?
         (data.message || data.error || data.detail || '菜单加载失败') :

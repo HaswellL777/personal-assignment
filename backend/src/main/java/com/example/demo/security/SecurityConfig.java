@@ -41,6 +41,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/apps/**").permitAll()
                 .requestMatchers("/api/ping").permitAll()
                 .requestMatchers("/hello").permitAll()
+                // Swagger UI 和 OpenAPI 文档
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                 // 系统管理接口需要认证
                 .requestMatchers("/api/system/**").authenticated()
                 // 其他所有请求都需要认证

@@ -1,13 +1,13 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
   application:
     name: demo
   datasource:
-    url: jdbc:mysql://101.201.127.215:3306/devops2025?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true
-    username: devops2025
-    password: sspku2025
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:devops2025}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-timeout: 60000
@@ -19,16 +19,12 @@ spring:
   # JPA 配置
   jpa:
     hibernate:
-      ddl-auto: create-drop  # 启动时创建表，关闭时删除表
-    show-sql: true
+      ddl-auto: update  # 生产环境建议使用 validate
+    show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
-
-  # Flyway 配置
-  flyway:
-    enabled: false  # 暂时禁用Flyway
 
 # MyBatis 配置
 mybatis:
@@ -36,15 +32,22 @@ mybatis:
   mapper-locations: classpath*:mapper/*.xml  # 映射文件位置
   configuration:
     map-underscore-to-camel-case: true  # 数据库下划线字段自动映射为 Java 驼峰属性
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL 语句到控制台
+    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}  # 使用SLF4J
 
 # JWT 配置
 jwt:
-  secret: mySecretKey123456789012345678901234567890
-  expiration: 86400000  # 24小时，单位毫秒
+  secret: ${JWT_SECRET:#{null}}  # 必须设置，否则启动时会验证失败
+  expiration: ${JWT_EXPIRATION:86400000}  # 24小时，单位毫秒
+
+# LLM 配置
+llm:
+  api-url: ${LLM_API_URL:https://api.openai.com/v1/chat/completions}
+  api-key: ${LLM_API_KEY:}
+  model: ${LLM_MODEL:gpt-3.5-turbo}
 
 # 日志配置
 logging:
   level:
-    com.example.demo: DEBUG
-    org.springframework.security: DEBUG
+    root: ${LOG_LEVEL:INFO}
+    com.example.demo: ${LOG_LEVEL:INFO}
+    org.springframework.security: WARN

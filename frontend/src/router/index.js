@@ -1,13 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../pages/Login.vue'
+import Register from '../pages/Register.vue'
 import Layout from '../components/Layout.vue'
 import Home from '../pages/Home.vue'
 import Dashboard from '../pages/Dashboard.vue'
 import Apps from '../pages/Apps.vue'
 import Profile from '../pages/Profile.vue'
+import AiAssistant from '../pages/AiAssistant.vue'
 
 const routes = [
   { path: '/', name: 'login', component: Login, meta: { requiresAuth: false } },
+  { path: '/register', name: 'register', component: Register, meta: { requiresAuth: false } },
   {
     path: '/home',
     component: Layout,
@@ -17,6 +20,7 @@ const routes = [
       { path: 'dashboard', name: 'dashboard', component: Dashboard },
       { path: 'apps', name: 'apps', component: Apps },
       { path: 'profile', name: 'profile', component: Profile },
+      { path: 'ai', name: 'ai-assistant', component: AiAssistant },
     ]
   },
 ]
@@ -34,8 +38,8 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
 
-  if (to.path === '/') {
-    // 登录页面
+  if (to.path === '/' || to.path === '/register') {
+    // 登录页面和注册页面
     if (token) {
       next('/home')
     } else {

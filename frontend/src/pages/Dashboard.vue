@@ -191,9 +191,9 @@ const operationResult = ref(null)
 const handleDeleteUser = async () => {
   deleteUserLoading.value = true
   operationResult.value = null
-  
+
   try {
-    const token = localStorage.getItem('auth_token') || ''
+    const token = localStorage.getItem('token') || ''
     const response = await fetch('/api/v1/admin/delete-user', {
       method: 'POST',
       headers: {
@@ -256,9 +256,9 @@ const handleDeleteUser = async () => {
 const handleGetSystemConfig = async () => {
   systemConfigLoading.value = true
   operationResult.value = null
-  
+
   try {
-    const token = localStorage.getItem('auth_token') || ''
+    const token = localStorage.getItem('token') || ''
     const response = await fetch('/api/v1/admin/system-config', {
       method: 'GET',
       headers: {

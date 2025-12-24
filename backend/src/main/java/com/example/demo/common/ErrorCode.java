@@ -29,5 +29,5 @@ public class ErrorCode {
     
     // 参数错误
     public static final int INVALID_PARAMETER = 40000;
-    public static final int MISSING_PARAMETER = 40001;
+    public static final int MISSING_PARAMETER = 40007;
 }
