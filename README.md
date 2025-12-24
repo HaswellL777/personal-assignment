@@ -36,41 +36,63 @@
 | 文档 | Swagger/OpenAPI 3 (springdoc) |
 | 部署 | Docker, Docker Compose, Nginx |
 
-## 快速开始
+## 一键部署指南（Docker Compose）
 
-### Docker 部署（推荐）
+适合老师快速检查：无需本地安装 Java/Node/MySQL，只需 Docker / Docker Compose。
+
+### 部署步骤
 
 ```bash
 # 1. 克隆项目
 git clone <repository-url>
 cd personal-assignment
 
-# 2. 配置环境变量
+# 2. 生成 .env 并设置关键配置
 cp .env.example .env
 
-# 3. 编辑 .env 文件，设置必要的环境变量
-#    - JWT_SECRET: JWT密钥（至少32字符）
-#    - LLM_API_KEY: AI API密钥（可选）
+# 必填：JWT_SECRET（至少32字符）
+# 可选：LLM_API_KEY（启用 AI 功能）
+# 如遇端口冲突，修改 .env 中 FRONTEND_PORT / BACKEND_PORT / MYSQL_PORT
 
-# 4. 启动服务
-docker-compose up -d
-
-# 5. 查看服务状态
-docker-compose ps
+# 3. 一键启动
+docker-compose up -d --build
 ```
 
-访问地址：
+### 一条命令启动（Linux/macOS）
+
+```bash
+cp .env.example .env \
+  && sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=$(openssl rand -base64 48)|" .env \
+  && rm -f .env.bak \
+  && docker-compose up -d --build
+```
+
+访问地址（以 .env 示例为准）：
 - 前端界面: http://localhost
 - API 文档: http://localhost:8080/swagger-ui.html
+- 健康检查: http://localhost:8080/api/ping
 
-### 本地开发
+常用命令：
+- 查看状态: docker-compose ps
+- 查看后端日志: docker-compose logs -f backend
+- 停止并清理: docker-compose down
+
+## 运行指南
+
+### 方式一：Docker 已部署
+1. 确认服务状态：`docker-compose ps`
+2. 浏览器访问前端并使用测试账号登录
+3. 健康检查：`curl http://localhost:8080/api/ping`
+
+### 方式二：本地开发
 
 **环境要求**: Java 17+, Node.js 18+, MySQL 8.0+
 
 ```bash
-# 1. 创建数据库
-mysql -u root -p
-CREATE DATABASE devops2025 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+# 1. 创建数据库并导入初始化数据
+mysql -u root -p -e "CREATE DATABASE devops2025 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p devops2025 < init-db/01-create-tables.sql
+mysql -u root -p devops2025 < init-db/02-insert-data.sql
 
 # 2. 启动后端
 cd backend
